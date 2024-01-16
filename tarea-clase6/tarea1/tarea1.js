@@ -18,11 +18,8 @@ function crearInputsPersonas(numeroDePersonas) {
     const inputPersona = document.createElement("input");
     inputPersona.id = `persona${i + 1}`;
     inputPersona.className = `persona`;
-    inputPersona.type = "number";
-    inputPersona.min = "1";
-    inputPersona.max = "150";
-    inputPersona.step = "1";
-
+    inputPersona.type = "text";
+    
     divPersona.appendChild(labelInputPersona);
     divPersona.appendChild(inputPersona);
     document.querySelector("#integrantes").appendChild(divPersona);
