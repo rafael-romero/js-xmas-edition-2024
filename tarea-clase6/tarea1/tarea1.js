@@ -1,3 +1,11 @@
+function marcarError(elemento) {
+  document.querySelector(`#${elemento}`).classList.add("error");
+}
+
+function quitarError(elemento) {
+  document.querySelector(`#${elemento}`).classList.remove("error");
+}
+
 function deshabilitarBotonOk() {
   document.querySelector("#btn-ok").disabled = true;
 }
@@ -19,10 +27,22 @@ function crearInputsPersonas(numeroDePersonas) {
     inputPersona.id = `persona${i + 1}`;
     inputPersona.className = `persona`;
     inputPersona.type = "text";
-    
+
     divPersona.appendChild(labelInputPersona);
     divPersona.appendChild(inputPersona);
     document.querySelector("#integrantes").appendChild(divPersona);
+  }
+}
+
+function validarNumeroIngresado(numero) {
+  if (numero === 0) {
+    return "Este campo debe tener al menos un digito mayor a cero";
+  } else if (isNaN(numero)) {
+    return "El valor ingresado debe ser un numero entero positivo";
+  } else if (numero < 0 || numero % 1 !== 0) {
+    return "Este campo solo admite numeros enteros positivos";
+  } else {
+    return "";
   }
 }
 
@@ -32,10 +52,20 @@ function obtenerNumeroDePersonas() {
 
 document.querySelector("#btn-ok").onclick = function (event) {
   const numeroDePersonas = obtenerNumeroDePersonas();
-  if (numeroDePersonas > 0) {
+  const errorNumeroDePersonas = validarNumeroIngresado(numeroDePersonas);
+
+  if (errorNumeroDePersonas === "") {
+    quitarError("cantidad-de-personas");
+    ocultarElemento("error-cantidad-de-personas");
     crearInputsPersonas(numeroDePersonas);
     mostrarElemento("btn-calcular");
     deshabilitarBotonOk();
+  } else {
+    marcarError("cantidad-de-personas");
+    document.querySelector("#error-cantidad-de-personas").textContent =
+      errorNumeroDePersonas;
+    mostrarElemento("error-cantidad-de-personas");
+    setTimeout(ocultarElemento, 4000, "error-cantidad-de-personas");
   }
 };
 
@@ -71,6 +101,35 @@ function colocarResultado(objetivo, valor) {
   document.querySelector(`#${objetivo}-edad`).textContent = valor;
 }
 
+function mostrarAlUsuario(error, idNumero) {
+  const span = document.createElement("span");
+  span.textContent = error;
+  span.id = `span${idNumero}`
+  document.querySelector(`#div-persona${idNumero}`).appendChild(span);
+}
+
+function validarEdadesIngresadas(edades) {
+  let numeroDeErrores = 0;
+  edades.forEach(function (edad, i) {
+    const tieneError = validarNumeroIngresado(edad);
+    if (tieneError) {
+      numeroDeErrores++;
+      marcarError(`persona${i + 1}`);
+      if (document.querySelector(`#span${i+1}`) === null){
+        mostrarAlUsuario(tieneError, i + 1);
+      }
+        
+    } else {
+      quitarError(`persona${i + 1}`);
+      if (document.querySelector(`#span${i + 1}`) !== null) {
+        document.querySelector(`#span${i + 1}`).remove();
+      }
+        
+    }
+  })
+  return numeroDeErrores;
+}
+
 function obtenerEdades() {
   const personas = document.querySelectorAll(".persona");
   const edades = [];
@@ -82,10 +141,14 @@ function obtenerEdades() {
 
 document.querySelector("#btn-calcular").onclick = function () {
   const edades = obtenerEdades();
-  colocarResultado("mayor", calcularEdadMayor(edades));
-  colocarResultado("menor", calcularEdadMenor(edades));
-  colocarResultado("promedio", calcularPromedioDeEdades(edades));
-  mostrarElemento("resultados");
+  const sonValidas = validarEdadesIngresadas(edades) === 0;
+  if (sonValidas) {
+    colocarResultado("mayor", calcularEdadMayor(edades));
+    colocarResultado("menor", calcularEdadMenor(edades));
+    colocarResultado("promedio", calcularPromedioDeEdades(edades));
+    mostrarElemento("resultados");  
+  }
+  
 };
 
 function habilitarBotonOk() {
